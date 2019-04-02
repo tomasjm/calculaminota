@@ -16,30 +16,92 @@ import Paper from '@material-ui/core/Paper';
 import { spacing } from '@material-ui/system';
 
 
-const notas = [
-  {
-    "nota": 7,
-    "porcentaje": 25
-  },
-  {
-    "nota": 7,
-    "porcentaje": 25
-  },
-  {
-    "nota": 7,
-    "porcentaje": 25
-
-  }
-];
-
-
 class App extends Component {
   constructor() {
     super();
-    notas.map((nota, i) => {
-      console.log(i);
+
+    this.addItem = this.addItem.bind(this);
+    this.handleNotas = this.handleNotas.bind(this);
+    this.handlePorcentaje = this.handlePorcentaje.bind(this);
+    this.calcularNotas = this.calcularNotas.bind(this);
+
+    this.state = {
+      notas: [
+        { nota: 0, porcentaje: 0 }
+      ]
+    };
+  }
+
+  addItem(e) {
+    e.preventDefault();
+    let i = this.state.notas.length;
+    const newItem = { nota: 0, porcentaje: 0 };
+    this.setState({
+      notas: [
+        ...this.state.notas,
+        newItem
+      ]
+
+    }, () => {
+      console.log(this.state);
     });
   }
+
+  handleNotas(e, id) {
+    e.preventDefault();
+    console.log(id);
+
+    let notas = [...this.state.notas];
+    let newnota = { ...notas[id] };
+    newnota.nota = e.target.value;
+    notas[id] = newnota;
+    this.setState({ notas });
+
+  }
+  handlePorcentaje(e, id) {
+    e.preventDefault();
+    console.log(id);
+
+    let sumaPorcentaje = 0;
+
+    this.state.notas.map(i => {
+      sumaPorcentaje += parseFloat(i.porcentaje);
+    });
+
+    let notas = [...this.state.notas];
+    let newPorcentaje = { ...notas[id] };
+    newPorcentaje.porcentaje = e.target.value;
+    notas[id] = newPorcentaje;
+
+    this.setState({ notas });
+
+  }
+
+  calcularNotas(e) {
+    e.preventDefault();
+
+    let notaFinal = 0;
+    let porcentajeFinal = 0;
+
+    let l = this.state.notas.length;
+
+    this.state.notas.map(i => {
+      notaFinal = notaFinal + parseFloat(i.nota) * parseFloat(i.porcentaje) / 100;
+      porcentajeFinal += parseFloat(i.porcentaje);
+    });
+    if (porcentajeFinal > 100) {
+      alert("Los porcentajes son invalidos");
+    } else if (porcentajeFinal == 100) {
+      alert("La nota final fue: " + notaFinal);
+    } else {
+      let notaFaltante = 0;
+      let porcentajeRestante = 100 - porcentajeFinal;
+      notaFaltante = (4 - notaFinal) / (porcentajeRestante / 100);
+      alert("Nota faltante: " + notaFaltante + " con un porcentaje equivalente a un " + porcentajeRestante + "%");
+    }
+  }
+
+
   render() {
     return (
       <div className="bg-color">
@@ -52,32 +114,38 @@ class App extends Component {
               <Table>
                 <TableHead>
                   <TableRow>
-                    <TableCell># de nota</TableCell>
-                    <TableCell>Nota</TableCell>
-                    <TableCell>Porcentaje</TableCell>
+                    <TableCell ># Nota</TableCell>
+                    <TableCell >Nota</TableCell>
+                    <TableCell >Porcentaje</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {
-                    notas.map((row, i) => (
+                    this.state.notas.map((row, i) => (
                       <TableRow key={row.id}>
-                        <TableCell>
-                          <Typography variant="h6">
+                        <TableCell >
+                          <Typography className="s-margin" variant="h6">
                             #{i + 1}
                           </Typography>
                         </TableCell>
                         <TableCell>
                           <TextField
-                            id="outlined-name"
+
+                            name={"N" + (i + 1)}
                             label={i + 1}
                             variant="outlined"
+                            onChange={(e) => this.handleNotas(e, i)}
                           />
                         </TableCell>
-                        <TableCell><TextField
-                          id="outlined-name"
-                          label="%"
-                          variant="outlined"
-                        /></TableCell>
+
+                        <TableCell >
+                          <TextField
+
+                            id="outlined-name"
+                            label="%"
+                            variant="outlined"
+                            onChange={(e) => this.handlePorcentaje(e, i)}
+                          /></TableCell>
                       </TableRow>
                     ))}
                 </TableBody>
@@ -85,19 +153,18 @@ class App extends Component {
 
               <div className="b-center">
                 <br />
-                <Fab color="primary" aria-label="Add">
+
+                <Fab name="add" onClick={this.addItem} color="primary" aria-label="Add">
                   <AddIcon />
                 </Fab>
+
+
                 <br />
                 <br />
-                <Button fullWidth variant="contained" color="primary" >
-                  Calcula mi nota
-              </Button>
-                <br />
-                <br />
-                <Button fullWidth variant="contained" color="primary" >
-                  Calcula nota necesaria para aprobar
-              </Button>
+                <Button fullWidth variant="contained" color="primary" onClick={this.calcularNotas}>
+                  Calcula mi nota final o faltante para aprobar
+                </Button>
+
               </div>
             </Paper>
           </Grid>
